@@ -1,0 +1,321 @@
+/**
+ * 慕课网
+ * Linux权限管理之基本权限
+ * created date 2017-06-23(FRI)
+ * created by mAZ
+ */
+===============
+2017-07-03(MON)
+===============
+课程大纲
+一、文件基本权限
+二、文件默认权限
+三、ACL权限
+四、文件特殊权限
+五、不可改变位权限
+六、sudo权限
+
+
+一、文件基本权限
+1、基本权限的修改
+2、权限的作用
+3、其他权限命令
+
+-rw-r--r--
+-（第一位符号）文件类型：-文件 d目录 l软链接文件
+rw-		u所有者
+r--		g所属组
+r--		o其他人
+r读 w写 x执行
+
+1、基本权限的修改
+chmod命令
+#修改文件或目录权限
+格式： chmod [选项] 模式 文件名
+选项：
+	-R	递归
+模式：
+	[ugoa][+-=][rwx]	#a所有  +加权限 -减权限 =赋值权限
+	[mode=421]			#这里用数值代替rwx	这种比较常用
+	
+栗子：
+修改权限的方式
+chmod u+x cangls.av
+chmod g+w,o+w furong.av
+chmod a=rwx fengjie.av
+
+2、权限的作用
+权限对文件的作用
+· r: 读取文件内容（cat more head tail）。
+· w: 编辑、新增、修改文件内容（vi echo）；
+	但是不包含删除文件。
+· x: 可执行。
+
+权限对目录的作用
+· r: 可以查询目录下文件名（ls）
+· w: 具有修改目录结构的权限。如新建文件和目录，删除此目录下文件和目录，重命名此目录下文件和目录，剪切（touch rm mv cp）
+· x: 可以进入目录（cd）
+
+
+对文件来讲: 最高权限是 x
+对目录来讲: 最高权限是 w
+
+3、其他权限命令
+修改文件的所有者
+chown 用户名 文件名
+例：
+chown ds fengj.av
+
+修改文件的所属组
+chgrp 组名 文件名
+例：
+chgrp group1 fengj.av
+
+
+简便写法
+chown root:root 123
+冒号前，代表所有者，后代表所属组。
+
+-----------栗子-----------
+让用户对文件及目录拥有一定的权限
+要求：
+-拥有一个av目录
+-让加藤老师拥有所有的权限
+-让本课程学员有查看的权限
+-其他所有人不许查看这个目录
+
+mkdir av	#创建目录
+useradd jt		#添加用户
+passwd jt		#设置用户密码
+groupadd user	#新建分组
+gpasswd -a user1 user	#将用户user1添加到user组
+useradd user2
+gpasswd -a user2 user	#将用户user2添加到user组
+chown jt:user av		#修改所有者、所属组	
+chmod 750 av	#修改权限
+----------------------
+
+
+二、文件默认权限
+查看默认权限的命令
+umask 
+#查看默认权限
+0022
+-第一位0：文件特殊权限
+-022：文件默认权限
+
+文件的默认权限
+· 文件默认不能建立为执行文件，必须手工赋予执行权限。
+· 所以文件默认权限最大为666。
+· 默认权限需要换算成字母在相减。
+· 建立文件后的默认权限，为666减去umask值。
+
+例1：
+文件默认最大权限666 umask值022
+-rw-rw-rw-	减去 -----w--w-等于 -rw-r--r--
+
+例2：
+文件默认最大权限666 umask值033
+-rw-rw-rw-	减去 -----wx-wx等于 -rw-r--r--
+权限不肯有负数，所以为-
+
+
+目录的默认权限
+· 目录默认权限最大为777。
+· 默认权限需要换算成字母在相减。
+· 建立文件之后的默认权限，为777减去umask值。
+例：
+目录默认最大权限为777 umask值022
+-rwxrwxrwx 减去 -----w--w- 等于 -rwxr-xr-x
+
+
+修改umask值
+1)临时修改
+· umask 0002
+2)永久修改
+· vi /etc/profile
+
+
+
+/**
+ * 慕课网
+ * Linux权限管理之特殊权限
+ * created date 2017-06-23(FRI)
+ * created by mAZ
+ */
+ 课程主要内容：
+ 一、ACL权限
+ 二、文件特殊权限
+ 三、不可改变权限
+ 四、sudo权限
+ 
+一、ACL权限	(解决用户身份不足的问题)
+1、ACL权限简介与开启
+查看分区ACL权限是否开启
+[root@localhost ~]# dumpe2fs -h /dev/sda5
+#dumpe2fs命令是查询指定分区详细文件系统信息的命令
+选线：
+-h 仅显示超级块中信息，而不显示磁盘块组的详细信息。
+
+临时开启分区ACL权限
+[root@localhost ~]# mount -o remount,acl /
+#重新挂载根分区，并挂载加入acl权限
+
+永久开启分区ACL权限
+[root@localhost ~]# vi /etc/fstab
+UUID=c2ca6f57-b15c-43ea-bca0-f239083d8bd2 / ext4 defaults,acl	1 1
+#加入acl
+[root@localhost ~]# mount -o remount /
+#重新挂载文件系统或重启动系统，使修改生效
+
+
+2、查看与设定ACL权限
+1)查看ACL命令
+[root@localhost ~]# getfacl 文件名
+
+2)设定ACL权限的命令
+[root@localhost ~]# setfacl 选项 文件名
+选项：
+- m: 设定ACL权限。
+- x: 删除指定的ACL权限。
+- b: 删除所有的ACL权限。
+- d: 设定默认ACL权限。
+- k: 删除默认ACL权限。
+- R: 递归设定ACL权限。 
+-----------栗子1-----------
+av目录所有者tony，所属组stu，权限770；想让用户lw(老王)拥有r-x权限。
+[root@localhost ~]# useradd tony
+[root@localhost ~]# groupadd stu
+[root@localhost ~]# mkdir /av
+[root@localhost ~]# chown tony:stu /av
+[root@localhost ~]# chmod 770 /av
+[root@localhost ~]# useradd lw
+[root@localhost ~]# setfacl -m u:lw:rx /av
+#给用户st赋予r-x权限，使用"u:用户名:权限"格式
+----------------------
+-----------栗子2-----------
+给用户组设定ACL权限
+[root@localhost /]# groupadd tgroup2
+[root@localhost /]# setfacl -m g:tgroup2:rwx /av
+#为组tgroup2分配ACL权限。使用"g:组名:权限"格式
+----------------------
+getfacl av	
+#file: av
+#owner: tony
+#group: stu
+user::rwx
+user:lw:r-x
+group::rwx
+mask::rwx
+other::---
+
+3、最大有效权限与删除ACL权限
+1)最大有效权限mask
+mask是用来指定最大有效权限的。如果我给用户赋予了ACL权限，是需要和mask的权限"相与"才能得到用户的真正权限。
+
+修改最大有效权限
+[root@localhost /]# setfacl -m m:rx 文件名
+#设定mask权限为r-x。使用"m:权限"格式。
+
+2)删除ACL权限
+[root@localhost /]# setfacl -x u:用户名 文件名
+#删除指定用户的ACL权限
+
+[root@localhost /]# setfacl -x g:组名 文件名
+#删除指定用户组的ACL权限
+
+[root@localhost /]# setfacl -b 文件名
+#会删除文件的所有的ACL权限
+
+
+4、默认ACL权限和递归ACL权限
+
+===============
+2017-07-05(WED)
+===============
+递归ACL权限
+递归是父目录在设定ACL权限时，所有的子文件和子目录也会拥有相同的ACL权限。
+setfacl -m u:用户名:权限 -R 目录名
+注意： 递归权限仅能赋予目录，不能不予文件。
+这里递归只对命令前存在的文件生效。
+
+默认ACL权限
+默认ACL权限的作用是如果给父目录设定了默认ACL权限，那么父目录中所有新建的子文件都会继承父目录的ACL权限。
+setfacl -m d:u:用户名:权限 目录名
+这里递归只对命令后存在的文件生效。
+
+
+二、文件特殊权限
+1、sudo权限
+root把本来只能超级用户执行的命令赋予普通用户执行。
+sudo的操作对象是系统命令。
+
+2、sudo使用
+[root@localhost ~]# visudo
+#实际修改的是/etc/sudoers文件
+
+root ALL=(ALL) ALL
+#用户名 被管理主机的地址=(可使用的身份)授权命令(绝对路径)
+#%wheel ALL=(ALL) ALL
+#%组名 被管理主机的地址=(可使用的身份)授权命令(绝对路径)
+
+例1：授权普通用户可以重启服务器
+[root@localhost ~]# visudo
+- user1 ALL=/sbin/shutdown -r now	//最后一行添加
+
+例1：普通用户执行sudo赋予的命令
+[root@localhost ~]# su - user1
+[user1@localhost ~]$ sudo -l
+#查看可用的sudo命令
+[user1@localhost ~]$ sudo /sbin/shutdown -r now
+#普通用户执行sudo赋予的命令
+
+例2：授权普通用户可以添加其他用户
+[root@localhost ~]# visudo
+- user1 ALL=/user/sbin/useradd
+- user1 ALL=/user/bin/passwd	<--这个不安全，可以修改root的密码
+#授权用户设置密码的权限
+- user1 ALL=/usr/bin/passwd [A-Za-z]*, !/usr/bin/passwd "", !/usr/bin/passwd root
+#不能设定root用户的密码。注意：!/前面必须要有空格，不然不会生效。
+
+
+文件特殊权限
+SetUID
+SetGID
+Sticky BIT
+
+1、SetUID的功能
+-只有可以执行的二进制程序才能设定SUID权限。
+-命令执行者要对该程序拥有x(执行)权限。
+-命令执行者在执行该程序时获得该程序文件属主的身份(在执行程序的过程中灵魂附体为文件的属主)。
+-SetUID权限只在该程序执行过程中有效，也就是说身份改变只在程序执行过程中有效。
+
+2、设定SetUID的方法
+4代表SUID
+chmod 4755 文件名
+chmod u+s 文件名
+
+passwd命令拥有SetUID权限，所以普通用户可以修改自己的密码
+[root@localhost ~]# ll /usr/bin/passwd
+
+cat命令没有SetUID权限，所以普通用户不能查看/etc/shadow文件内容
+[root@localhost ~]# ll /bin/cat
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

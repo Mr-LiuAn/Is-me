@@ -1,0 +1,803 @@
+﻿===============
+2017-05-15(MON)
+===============
+Linux达人养成计划I
+
+[root@localhost ~]# 		
+其中：
+root		表示当前用户
+localhost	主机名
+~			当前所在目录(~为用户家目录，root为/root,其他用户的家目录/home/)
+#			超级用户的提示符，普通用户的提示符是$
+
+ctrl + l	清屏
+ctrl + u	清除当前输入的命令
+ctrl + c	终止执行当前命令
+ctrl + q	退出由于vim文件是按了ctrl+s锁屏
+
+
+命令格式
+命令 [选项] [参数]
+注意：个别命令使用不遵循此格式
+	当有多个选项时，可以写在一起
+	简化选项与完整选项
+	
+
+查询目录中内容：ls
+格式：ls [选项] [文件或目录]
+选项：
+-a 显示所有文件，包含隐藏文件
+-l 显示详细信息
+-d 查看目录属性
+-h 人性化显示文件大小
+-i 显示inode
+例:
+ls
+ls -lh
+ls -ah
+ll	等于	ls -l
+
+
+目录处理命令
+建立目录：mkdir
+格式：mkdir -p [目录名]
+-p	递归创建
+
+切换所在目录：cd
+格式：cd [目录]
+简化操作：
+cd ~	进入当前用户的家目录
+cd -	进入上次目录
+cd ..	进入上一级目录
+cd .	进入当前目录
+
+Tab键补全
+可以识别命令补全，也可以识别目录补全
+例1：
+cd /usr/l 	//然后按两次键盘Tab键
+lib/		libexec/	local/
+例2：
+cd /usr/local/s
+sbin/	share/		src/
+例3：
+user
+useradd		userdel		userhelper		usermod		usernetctl		users
+
+查询所在目录位置： pwd
+格式：pwd
+
+删除空目录：rmdir
+格式：rmdir [目录名]
+
+删除文件或目录：rm
+格式：rm -rf 文件或目录名
+-r	删除目录
+-f	强制
+
+复制命令：cp
+格式：cp [选项] [原文件或目录] [目标目录]
+选项：
+-r	复制目录
+-p	连带文件属性复制
+-d	若源文件是链接文件，则复制链接属性
+-a	相当于 -pdr
+
+剪切或改名命令：mv
+格式：mv [原文件或目录] [目录目录]
+同一级目录为改名，不同目录为粘贴
+
+Linux中常用目录作用
+/		根目录
+/bin	命令保存目录（普通用户就可以读取的命令）
+/boot	启动目录，启动相关文件
+/dev	设备文件保存目录
+/etc	配置文件保存目录
+/home	普通用户的家目录
+/lib	系统库保存目录
+/mnt	系统挂载目录
+/media	挂载目录
+/root	超级用户的家目录
+/tmp	临时目录
+/sbin	命令保存目录(超级用户才能使用的目录)
+/proc	直接写入内存的
+/sys
+/usr	系统软件资源目录
+	/usr/bin/系统命令(普通用户)
+	/usr/sbin/系统命令(超级用户)
+/var	系统相关文档内容
+根目录下的bin和sbin,usr目录下的bin和sbin，这四个目录都是用来保存系统命令的。
+proc和sys目录不能直接操作，这两个目录保存的是内存的过载点。
+可以在家目录root或home，以及tmp目录下随便放内容。
+
+文件处理命令
+链接命令：ln
+格式：ln -s [原文件] [目标文件]
+描述：生成链接文件
+选项：-s	创建软链接
+例1：
+
+
+
+文件搜索命令find:
+find /root -iname install.log
+#不区分大小写
+
+find /root -user root 
+#按照所有者搜索
+
+find /root -nouser
+#查找没有所有者的文件
+
+find /etc -size +20k -a -size -50k
+#查找/etc/目录下，大于20KB并且小于50KB的文件，并显示详细信息
+-a and 逻辑与，两个条件都满足
+-o or	逻辑或，两个条件满足一个即可
+
+find /etc -size +20k -a size -50k -exec ls -lh {} \;
+#查找/etc/目录下，大于20KB并且小于50KB的文件，并显示详细信息
+#-exec/-ok 命令{}\;对搜索结果执行操作
+例1：
+find /root -inum 262421 -exec rm -rf {} \;
+
+
+字符串搜索命令grep:
+grep [选项] 字符串 文件名
+#在文件当中匹配符合条件的字符串
+选项：
+-i 忽略大小写
+-v 排除指定字符串
+例1：
+grep "size" anaconda-ks.cfg
+
+
+find命令与grep命令的区别？
+1、find命令：在系统当中搜索符合条件的文件名，如果需要匹配，使用通配符匹配，通配符是完全匹配。
+2、grep命令：在文件当中搜索符合条件的字符串，如果需要匹配，使用正则表达式进行匹配，正则表达式时包含匹配。
+
+
+帮助命令man
+格式： man 命令
+#获取指定命令的帮助
+例1：
+man ls
+#查看ls的帮助
+
+man -f 命令
+相当于
+whatis 命令
+例1：
+man -5 passwd
+man -4 null
+man -8 ifconfig
+
+
+===============
+2017-05-16(TUE)
+===============
+Shell脚本执行方式
+2、第一个脚本
+vi hello.sh
+#!/bin/bash			//必须行
+#The first program	//注释
+
+echo -e "你好中国";
+
+3、脚本执行
+1)赋予执行权限，直接运行	(常用)
+chmod 755 hell.sh
+./hello.sh
+
+2)通过Bash调用执行脚本
+bash hello.sh
+
+
+VIM编辑器概述
+Visual Interface	可视化接口
+
+VI->VIM
+VIM相对于VI做了哪些提升？
+ -VIM支持多级撤销
+ -VIM可以跨平台运行
+ -VIM支持语法高亮
+ -VIM支持图形界面
+ 
+
+VI编辑器的操作模式
+Command Mode -命令模式
+Insert Mode -输入模式
+Last Line Mode -底行模式(尾行，末行)
+
+vim + abc	把光标移到文件最后一行
+vim +3 abc	把光标移到文件第三行
+输入行号大于文件行号，光标自动移动到末行。
+vim	+/xxx abc	光标移动到xxx第一次出现的行号，n为下一个xxx的行号
+vim aa bb cc	同时打开多个文件 :n切换到下一个文件		:N或:prev切换到上一个文件
+
+
+常用指令
+底行模式常用指令
+:w		修改
+:q		退出当前vi编辑
+:!		强制执行
+组合使用:!wq :q!
+:ls
+:n		切换到下一个文件
+:15		快速定位光标到15行
+/xxx	光标向后搜索
+?xxx	光标向前搜索
+
+命令模式常用指令
+h		光标左移
+j		光标下移
+k		光标上移
+l		光标右移
+ctrl + f 向下翻页
+ctrl + b 向上翻页
+ctrl + d 向下翻半页
+ctrl + u 向上翻半页
+dd		删除光标所在行
+o		在光标所在行的下方插入一行并切换到输入模式
+yy		复制光标所在的行
+p		在光标所在行的下方粘贴
+P		在光标所在行的上方粘贴
+
+
+磁盘管理
+df查看磁盘分区使用状况
+
+
+用户管理
+用户和用户组
+用户：使用操作系统的人
+用户组：具有相同系统权限的一组用户
+
+用户和用户组
+/etc/group 存储当前系统中所有用户组信息
+-Group:x:123:abc,def,xyz
+-组名称:组密码占位符:组编号:组中用户名列表
+
+/etc/gshadow	存储当前系统中用户组的密码信息
+-Group:*::abc,def,xyz
+-组名称:组密码:组管理者:组中用户名列表
+
+/etc/passwd	存储当前系统中所有用户的信息
+-user:x:123:456:xxxxxxxx:/home/user:/bin/bash
+-用户名:密码占位符:用户编号:用户组编号:用户注释信息:用户主目录:shell类型
+
+/etc/shadow		存储当前系统中所有用户的密码信息
+-user:vf;/Zu8sdf...:::::
+-用户名:密码:::::
+
+添加用户组：
+groupadd 组名
+groupadd sexy
+
+修改用户组名称：
+groupmod -n 新组名	原组名
+groupmod -n market sexy
+
+修改用户组的编号：
+groupmod -g 编号 组名
+groupmod -g 668 market
+
+创建用户组同时，指定用户组编号：
+groupadd -g 编号 组名
+groupadd -g 888 boss
+
+删除用户组：
+groupdel 组名
+groupdel market
+注意：必须要先删除分组里的用户，不然变成黑用户，对服务器不安全。
+
+
+1、添加新的用户账号使用useradd命令，其语法如下：
+useradd 选项 用户名
+其中各选项含义如下：
+
+代码:
+-c comment 指定一段注释性描述。
+-d 目录 指定用户主目录，如果此目录不存在，则同时使用-m选项，可以创建主目录。
+-g 用户组 指定用户所属的用户组。
+-G 用户组，用户组 指定用户所属的附加组。
+-s Shell文件 指定用户的登录Shell。
+-u 用户号 指定用户的用户号，如果同时有-o选项，则可以重复使用其他用户的标识号。
+
+创建用户：
+groupadd sexy
+useradd -g sexy sdf			创建用户
+useradd -g sexy king
+useradd -d /home/xxx imooc	创建用户的时候，通过-d参数，指定用户的个人文件夹
+
+2、修改帐号
+usermod 选项 用户名
+usermod -c xiaoming sdf	   	给用户创建备注(注释)
+usermod -l cls sdf			修改用户名
+usermod -d /home/cls cls	修改个人文件名的路径
+usermod -g sexy imooc		切换用户到指定的用户目录
+
+3、删除帐号
+如果一个用户的账号不再使用，可以从系统中删除。删除用户账号就是要将/etc/passwd等系统文件中的该用户记录删除，必要时还删除用户的主目录。删除一个已有的用户账号使用userdel命令，其格式如下：
+
+userdel 选项 用户名
+常用的选项是-r，它的作用是把用户的主目录一起删除。
+
+userdel 文件名		删除用户账号名
+userdel jzmb
+userdel -r jzmb		删除用户同时删除用户名指定的目录
+
+4、用户口令的管理
+用户管理的一项重要内容是用户口令的管理。用户账号刚创建时没有口令，但是被系统锁定，无法使用，必须为其指定口令后才可以使用，即使是指定空口令。
+指定和修改用户口令的Shell命令是passwd。超级用户可以为自己和其他用户指定口令，普通用户只能用它修改自己的口令。命令的格式为：
+passwd 选项 用户名
+可使用的选项：
+
+代码:
+-l 锁定口令，即禁用账号。
+-u 口令解锁。
+-d 使账号无口令。
+-f 强迫用户下次登录时修改口令。
+如果默认用户名，则修改当前用户的口令。
+
+例如，假设当前用户是sam，则下面的命令修改该用户自己的口令：
+$ passwd
+Old password:******
+New password:*******
+Re-enter new password:*******
+
+如果是超级用户，可以用下列形式指定任何用户的口令：
+# passwd sam
+New password:*******
+Re-enter new password:*******
+
+普通用户修改自己的口令时，passwd命令会先询问原口令，验证后再要求用户输入两遍新口令，如果两次输入的口令一致，则将这个口令指定给用户；而超级用户为用户指定口令时，就不需要知道原口令。
+为了系统安全起见，用户应该选择比较复杂的口令，例如最好使用8位长的口令，口令中包含有大写、小写字母和数字，并且应该与姓名、生日等不相同。
+
+为用户指定空口令时，执行下列形式的命令：
+# passwd -d sam
+此命令将用户sam的口令删除，这样用户sam下一次登录时，系统就不再询问口令。
+
+passwd命令还可以用-l(lock)选项锁定某一用户，使其不能登录，例如：
+# passwd -l sam
+
+
+touch /etc/nologin	某一天，由于服务器的维护，需要暂时禁止普通账户登录服务器，在etc下创建nologin即可，有了这个文件就可以禁止除了root账户以为的其他用户登录服务器。
+
+
+passwd -l cls	锁定用户
+passwd -u cls	解锁用户
+passwd -d cls	将用户修改为无密码，用户则不需要密码就可以登录服务器。
+
+
+主要组与附属组
+用户可以同时属于多个组
+-一个主要组
+-多个附属组
+gpasswd -a cls boss		添加用户cls到boss用户组
+gpasswd -d cls boss		删除boss用户组的用户cls，cls就不是boss组的用户了
+newgrp boss				这个命令需要用户自己切换
+useradd -g group1 -G group2,group3......
+gpasswd imooc			设置组密码
+
+切换同前用户身份
+su 用户名
+如:
+su username
+su后面不加，则切换到root用户
+
+
+其他命令：
+who				查看当前登录用户
+whoami			我是谁？显示当前登录用户名
+id imooc		显示指定用户信息，包括用户编号、用户名；主要组编号及名称，附属组列表
+groups imooc	显示imooc用户所在的所有组
+chfn imooc		设置用户资料，依次输入用户资料
+finger imooc	显示用户详细资料
+
+
+
+
+
+
+
+
+
+
+
+
+
+linux
+目录结构：
+/
+bin  系统命令解析文件
+boot   系统内核文件
+dev   外部设备
+etc   配置文件
+home  普通用户的家目录	www
+root  超级管理员的家目录
+sbin  超级管理员可以执行的命令文件
+usr   安装程序
+tmp   临时文件目录
+lost+found
+var 日志文件
+proc  进程目录
+
+
+常用命令
+名称  -选项  参数1 参数2 ......
+
+pwd		//查看当前工作目录 
+查看是否安装：rpm -qa | grep nginx	//如果已经安装，出现软件版本号
+cd 目标目录		//目录跳转
+说明：
+目录目录，可以使用相对路径，使用全路径
+
+查看目录下的内容：
+ls #当前工作目录下的内容
+ls 路径
+ls -l 路径
+ll
+权值：
+drwxrwxrw- 
+第一位：文件类型  
+	d   目录
+	- 普通文件
+	l 连接文件
+	b 设备文件
+第二位到第五位：文件所有者具有的权限
+第六位到第八位：同组用户具有的权限
+剩下的：其他用户具有的权限
+
+r----读       4
+w----写       2
+x----可执行   1
+
+一、目录操作:
+创建：mkdir 目录的名称
+创建多级目录：mkdir -p 目录名称 
+删除空目录：rmdir
+删除多级空目录：rmdir -p 目录名称
+删除目录及文件：rm -rf 目录名称
+test/test1/test2
+
+拷贝（文件及目录）
+cp -r 拷贝谁  拷贝到哪
+说明：
+拷贝文件必须用-r
+-p 保留原来文件的属性
+-f 强制执行
+
+转移(同一级叫改名，否则移动)
+mv 转移谁  转移到哪里去
+-f  强制执行（覆盖）
+-i  询问
+
+文件操作
+新建：touch 文件路径
+删除：unlink 文件路径
+查看：
+编辑：
+
+文件及目录权限的修改
+chmod 参数 权值 被修改文件及目录路径
+参数 -R  同时修改子目录及文件的权限
+权值：
+数字
+124
+1+2+4=7
+1+2=3
+1+4=5
+2+4=6
+1 2 3 4 5
+1 --x
+2 -w-
+3 -wx
+4 r--
+5 r-x
+6 rw- 
+7 rwx
+
+权值：三位1到7的数  ugo
+777 766
+
+文字
+ugoa+-=rwx
+说明：指定多个权值时，用逗号分开。
+
+文件压缩
+gzip [-frl] 被压缩的文件或目录
+f:强制压缩
+r:递归操作
+l:显示压缩的过程
+
+说明：被压缩的文件销毁
+
+文件解压
+gunzip [-fr] 压缩文件的路径
+
+文件打包
+tar -cvf 被压缩的目录
+文件解包
+tar -xvf 解包的文件
+
+
+14-03-12(WED)
+linux操作
+知识点：
+find 查找文件
+find 目录 查找的方式
+查找方式:
+1)根据文件名称查找:
+find 目录 -name 文件名称
+* 任意字符任意多个
+[0-9][0-9][0-9]
+
+2)根据文件大小查找   //用的比较多
+find 目录 -size +—大小   //跟上加减符作比较
+说明：可以跟单位 ＢkＭ   //k是小写的
+例：find ./test31 -size +28k
+或：find ./test31 -size +28k|find -name abc1.log
+
+3)根据权限查找
+find 目录 -perm 权值//权值跟的是数字
+
+4)根据用户查找
+find 目录 -user 用户名
+例：find ./ -user soft06
+
+5)根据分组查找
+find 目录 -group 分组名称
+
+vi文本编辑器
+打开文本文件，可写入、修改、查找、替换、保存
+vi 文本文件的路径  //打开
+说明：文本不存在，则自动创建
+三种模式:
+1写入模式：
+进入写入模式
+i  在光标所在位置前开始写入
+a  在光标所在位置后开始写入
+o  另起一行
+
+如何回到命令模式？？
+答：esc键
+
+2命令模式：
+光标移动
+h 左
+j 下
+k 上
+l 右
+
+^     行首
+$     行尾
+w     移动到下一个单词
+e     单词的结束
+b     单词开始
+0     文档的开头//零非字母O
+数值  文档中的某一位置
+
+删除(insert模式)
+x       删除光标位置一个字符
+数值x   删除光标位置及后面共n个字符//例：6x
+dd      删除光标所在行
+数值dd  删除光标及下方n行
+
+复制：
+yw      复制光标位置字符,直到单词结束
+yy      复制一行//常用
+数值yy  复制多行
+
+黏贴：p
+
+回退：u
+
+进入末行命令模式：按冒号:
+
+3末行命令模式
+列出行号：set nu
+跳到指定行：数字
+查找：?关键字 或 /关键字
+继续查找下一个：n
+替换：
+:1,$s/search/replace/g   //1代表第一行，$到最后一行,查找的字符，替换成那个字符，替换所有(如果是c则是替换前询问)
+:#,#s/search/replace/c
+
+保存：:w
+退出：:q
+保存并退出：:wq
+强制退出：:q!
+
+
+
+简单说shell脚本：
+创建（任何目录中）
+vi 名称.sh
+基本语法：
+1、#!/bin/sh     意思是bin目录下放的源文件
+2、#注释
+3、每行代码后没有结束符号，直接换行
+
+运行：
+sh shell文件的地址
+
+声明变量：
+声明：变量名=初值
+使用变量：$变量名
+echo 变量
+例：
+str="大家好"
+echo $str   //保存并退出后，运行该文件，会显示"大家好"
+
+
+运算：
+expr 运算式   
+例：
+num1=5
+num2=6
+num = $[`expr $num1+$num2`]  //不是单引号，而是键盘Tab键上的按钮
+
+比较运算：
+test 值 -eq|-lt|-gt|-le|-ge|-nq
+
+输出变量内容到文件中
+echo $str >> 指定文件
+
+
+流程控制语句
+条件语句：
+if test 表达式; then
+条件真执行语句
+else
+假执行语句
+fi
+
+判断文件或目录是否存在：
+文件的判断：
+if[[ -f "文件路径" ]];then
+echo '文件存在';
+else
+echo '文件不存在';
+fi
+
+判断目录是否存在：
+if [[ -d "目录名称"]];then
+echo '存在';
+else
+echo '不存在';
+fi
+注意：如果判断用的是-e时，它可以判断文件也能判断目录
+
+more 文件名//打开文件
+
+数据库备份的脚本
+
+循环
+i=0
+while [[ $i -le 数值 ]]
+do
+  循环体
+  i=$[`expr $i + 1`]
+done
+
+定时任务
+crontab 分钟 小时 天 月 年 要执行的脚本
+例：
+crontab 00 12 31 08 2014 sh a/a.sh
+* 代表所有
+crontab 00 12 31 08 * sh a/a.sh   //代表所有的年
+
+*/5 每5分钟
+crontab */5 12 31 08 2014 sh a/a.sh
+
+,具体值得罗列
+crontab 5,15 12 31 08 2014 sh a/a.sh
+
+-由一个点到另一个点
+crontab 05 12 31 08 2013-2018 sh a/a.sh
+
+每两分钟,往文件test.txt中写入一个字符串 date
+crontab -l   查看
+crontab -r   所有都删除
+crontab -e
+
+14-03-13(THU)
+项目（10天）
+
+mysql集群(主从服务器)
+
+品牌管理
+产品分类的添加
+create table day_type(          
+     tid int(8) primary key auto_increment,
+     tname char(20) not null,
+     fid int(8) default 0
+)       //无限极分类
+
+产品分类添加:(递归实现)
+        名称:单行文本输入框
+      父分类:下拉列表框
+
+递归：
+   自己调用自己
+   一定有一个结束条件
+例：
+衣服：
+	上衣
+		夹克
+		风衣
+	裤子
+		牛仔裤
+		7分裤
+化妆品：
+	护肤
+		大宝
+	美白
+		小宝
+
+function getType($fid=0){
+      $m=M("type");
+      $arr = $m->where("fid={$fid}")->select();
+      if(!empty($arr)){
+         foreach($arr as $v){
+	    echo "<optin value='{$arr['tid']}'>{$arr['tname']}</option>";
+	    //判断有没有子集
+	    $arrs = $m->field("count(*) as num")->where("fid={$arr['tid']}")->select();
+	    $num = $arrs[0]['num'];
+	    if($num){
+	        getType($arr['tid']);
+	    }
+         }
+      }      
+}
+
+
+
+
+
+
+
+产品添加
+产品表：
+create table day_product(
+pid int(10) unsigned primary key auto_increment,
+ptitle varchar(50),
+pbrand varchar(10),
+ptypeid int(3),
+pprice float(8,2),
+puprice float(8,2),
+psprice float(8,2),
+psnum tinyint(3),
+state tinyint(2), #0--下架  1--推荐  9--删除  2--上架
+content text,
+guige varchar(200),
+addtime int(11),
+saletime int(11),
+num int(5)
+);
+
+产品图片表：
+create table day_product_image(
+id int(10) unsigned primary key auto_increment,
+pid int(10),
+imagename char(36) not null
+);
+
+
+产品详细页
+
+购物车
+订单流程
+支付宝
+
+
+
+ifconfig//查看ip
+ctrl+c//退出
+vi   //打开文件或创建文件
+=>i  //编辑
+=>Esc按键//退出编辑
+:wq  //保存
+:q   //退出
+ps -aux //查看所有进程
+whoami //查看当前用户
+passwd //修改当前用户密码

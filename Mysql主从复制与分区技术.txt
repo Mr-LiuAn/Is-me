@@ -1,0 +1,39 @@
+===============
+2017-12-27(WED)
+===============
+[兄弟连]Mysql主从复制与分区技术
+第1集 Mysql grant用户授权.avi
+
+1、Mysql用户授权
+2、Mysql bin-log日志
+3、Mysql主从复制
+4、Mysql分区技术
+
+1、Mysql用户授权
+登陆mysql数据库
+mysql>mysql -uroot -p test
+
+给从服务器设置授权用户(在主服务器操作)
+1.mysql>grant all slave on *.* to user@192.168.10.2 identified by "password";
+2.mysql>grant replication slave on *.* user@192.168.10.2 identified by "password";
+
+查看用户授权表
+select user,host,password from mysql.user;
+
+
+2、Mysql bin-log日志
+3、Mysql主从复制
+4、Mysql分区技术
+
+
+
+
+
+
+
+
+
+
+
+
+

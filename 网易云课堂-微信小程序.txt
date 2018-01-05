@@ -1,0 +1,806 @@
+===============
+2017-04-14(FRI)
+===============
+网易云课堂
+微信小程序
+
+//小程序显示的时候触发
+onShow:function(){
+	console.log('生命周期函数-监听小程序显示的时候触发');
+},
+onHide:function(){
+	console.log('生命周期函数-监听小程序隐藏的时候触发');
+}
+
+app.wxss样式文件
+app.json小程序的配置
+pages 多了一个页面都要在pages配置	
+------------app.json------------
+//注意：都必须使用双引号
+{
+	"pages":[
+		"pages/test/test",	//第一位，启动打开的第一个页面，放index就打开index文件
+		"pages/index/index",
+		"pages/logs/logs"
+	],
+	"window":{
+		"backgroundTextStyle":"light",
+		"navigationBarBackgroundColor":"#000",
+		"navigationBarTitleText":"微信",
+		"navigationBarTextStyle":"white"
+	},
+	"tabBar":{		//是一个数组，只能配置最少2个、最多5个tab,tab按数组的顺序排序。 菜单栏
+		"color":"#333",			//默认文字颜色
+		"selectedColor":"red",	//选中后的文字颜色
+		"list":[{
+			"pagePath":"pages/index/index",
+			"text":"首页",
+			"iconPath":"images/index.png",					//图标
+			"selectedIconPath":"images/index_active.png"	//选中的图标
+		},{
+			"pagePath":"pages/test/test",
+			"text":"测试页"
+		}]
+	}
+}
+-------------------------------	
+
+------------pages/test/test.js------------
+Padge({
+	data:{
+		name:'hello'
+	},
+})
+-------------------------------	
+
+------------pages/test/test.wxml------------
+<view>test页</view>
+<view>{{name}}</view>	//hello 	调用js=>data=>name
+-------------------------------		
+	
+	
+	
+逻辑层注册程序和注册页面：
+js文件就是逻辑层操作
+------------app.js------------
+App({
+	//小程序显示的时候触发
+	onShow:function(){
+		console.log('生命周期函数-监听小程序显示的时候触发');
+	},
+	onHide:function(){
+		console.log('生命周期函数-监听小程序隐藏的时候触发');
+	},
+	//全局的方法
+	getUserInfo:function(cb){
+		var that = this
+		if(this.globalData.userInfo){
+			typeof cb == "function" && cb(this.globalData.userInfo)
+		}else{
+			//调用登录接口
+			wx.login({
+				success:function(){
+					wx.getUserInfo({
+						success: function(res){
+							that.globalData.userInfo = res.userInfo
+							typeof cb == "function" && cb(that.globalData.userInfo)
+						}
+					})
+				}
+			})
+		}
+	},
+	//全局的属性
+	globalData:{
+		userInfo:null,
+		pass:'1234567'
+	}
+})
+-------------------------------	
+------------pages/test/test.js------------
+var app = getApp();	//全局的getApp()函数，可以获取到小程序示例 app.js文件
+Page({
+	data:{
+		name:"hello",
+		pass:null
+	},
+	onLoad:function(options){
+		//页面初始化 options为页面跳转所带来的参数
+		this.setData({
+			pass:app.globalData.pass		//获取app.js里的全局属性pass
+		})
+	},
+	onReady:function(){
+		//页面渲染完成
+	},
+	onShow:function(){
+		//页面显示
+		console.log('这是测试页的onShow');
+	},
+	onHide:function(){
+		//页面隐藏
+	},
+	onUnload:function(){
+		//页面关闭
+	}
+})
+-------------------------------		
+	
+setData 用得非常多的方法
+函数用于将数据从逻辑层发送到视图层，同事改变对应的 this.data 的值
+注意：
+	1、直接修改 this.data 无效，无法改变页面的状态，还会造成数据不一致。
+	2、单次设置的数据不能超过1024kB，请尽量避免一次设置过多的数据。
+	
+	
+	
+页面的路由：
+可以认为页面的一个跳转
+1、打开新页面：
+------------pages/test/test.wxml------------
+<view>test页</view>
+<view>{{name}}</view>	//hello 	调用js=>data=>name
+//事件跳转
+<button bindtap="toIndex">跳转到首页</button>	//使用bindtap绑定toIndex事件
+
+//标签跳转
+<navigator url='../index/index' redirect='true'>跳转到首页</navigator>	
+//redirect属性，不带返回按钮，完全跳到一个新页面
+//如果配置了tabBar的话 ，navigator标签实现跳转不能跳转到tabBar配置里面的路径
+-------------------------------	
+
+------------pages/test/test.js------------
+toIndex:function(){
+	//wx.navigateTo({	//如果配置了tabBar的话 ，navigator标签实现跳转不能跳转到tabBar配置里面的路径
+	wx.switchTab({		//这个和上面相反，可以跳转到tabBar配置里面的路径
+		url:"../index/index",	//是 需要跳转的应用内页面的路径
+		success:function(){},	//否 接口调用成功的回调函数
+		fail:function(){},		//否 接口调用失败的回调函数
+		complete:function(){}	//否 接口调用结束的回调函数(调用成功、失败都会执行)
+	});
+}
+-------------------------------	
+
+2、页面重定向：
+wx.redirectTo		//如果配置了tabBar的话 ，navigator标签实现跳转不能跳转到tabBar配置里面的路径
+<navigator>	redirect属性
+
+3、页面返回：
+wx.navigateBack	
+
+
+模块化：
+我们可以将一些公告的代码抽离成一个独立的js文件，作为一个模块。模块只有通过module.exparts才能对外暴露接口。
+注意：要装node.js才生效
+//common.js
+function sayHello( name )
+{
+	console.log('Hello'+ name + '|');
+}
+module.exports = {
+	sayHello: sayHello
+}
+在需要使用这些模块的文件中，使用require(path)将公共代码引入。
+var common = require('common.js');		//引入common.js文件
+Page({
+	helloMINA: function (){
+		common.sayHello('NIMA');		//调用common.js的sayHello模块
+	}
+})
+	
+	
+视图层
+WXML	
+WXML中的动态数据均来自对应Page的data。
+使用双花括号括起来
+<view>{{message}}</view>
+
+wx:if	条件渲染
+格式	wx:if='{{condition}}'	判断是否需要渲染该代码块
+也可以wx:elif和wx:else来添加一个else快：
+<view wx:if='{{length == 5}}'> 1 </view>
+<view wx:elif='{{length > 2}}'> 2 </view>
+<view wx:else> 3 </view>
+例：
+------------pages/test/test.wxml------------
+<!-- 条件渲染 -->
+<button bindtap="show">显示隐藏</button>	//绑定事件,控制view是否显示
+<view wx:if="{{bol}}">条件渲染显示</view>	//wx:if为true时则显示，false则不显示	
+
+<block wx:if="{{true}}">	//这里当条件为true时，block里面的所有数据都显示；block可以是div或其他标签
+	<view>第一个view</view>
+	<view>第二个view</view>
+</block>
+
+<text hidden='{{false}}'>我是第一段文本</text>	//hidde为true时，text隐藏；在view上不生效，只在text上生效
+------------------------------------	
+------------pages/test/test.js------------
+Page({
+	data:{
+		bol:false
+	},
+	show:function(){
+		this.setData({
+			bol: !this.data.bol
+		});
+	}
+})
+------------------------------------	
+	
+===============
+2017-04-17(MON)
+===============
+数据绑定
+运算：
+三目运算
+<view>{{bol ? "正" : "反"}}</view>
+
+算法运算
+<view>{{3+5}}</view>
+<view>{{id+5}}</view>//id为data的参数
+
+字符串连接
+<view>{{"hello "+name}}</view>//name为data的参数
+
+for循环
+data:{
+	id:8,
+	arr:[1,2,3,4,5]
+}
+<view wx:for='{{arr}}'>项目：{{item}}</view>	//会对view循环输出，item为数组里面的值
+
+组合
+<view wx:for="{{[id,5,4,3,2,1]}}">{{item}}</view>
+
+定义模板：	//一定要加name属性，定义模板不会显示，必须要使用他；模板拥有独立作用域
+定义一个模板：name
+<template name="object">
+	<view>{{a}}</view>
+	<view>{{b}}</view>
+	<view>{{name}}</view>	//它不会获取data里的参数，只能通过使用模板传递过来
+</template>
+使用模板：is
+<template is="object" data="{{a:1,b:2,name:name}}"></template>
+
+for详解
+<view wx:for='{{arr}}' wx:for-index='i' wx:for-item='itemName'>
+	下标：{{index}},值：{{item}}
+</view>
+默认：
+item	是值
+index	是下标
+可修改：
+wx:for-index	修改下标名
+wx:for-item		修改值名
+
+
+例子：99乘法
+<view wx:for="{{[1,2,3,4,5,6,7,8,9]}}" vx:for-item='i'>
+	<view style='display:inlink-block;' wx:for="{{[1,2,3,4,5,6,7,8,9]}}" wx:for-item='j'>
+		<view wx:if='{{j<=i}}'>
+			{{i}}*{{j}}={{i*j}}
+		</view>
+	</view>
+</view>
+
+
+===============
+2017-04-18(TUE)
+===============
+事件
+1、什么是事件？
+事件是视图层到逻辑层的通讯方式
+事件可以将用户的行为反馈到逻辑层进行处理
+事件可以绑定在组件上，当达到触发事件，就会执行逻辑层中对应的事件处理函数
+事件对象可以携带额外信息，如id，dataset,touches
+
+2、事件的使用方式
+在组件中绑定一个事件处理函数。
+如bindtap,当用户点击该组件的时候会在该页面对应的Page中找到相应的事件处理函数。
+
+3、事件分类
+1)冒泡事件
+2)非冒泡事件
+
+注意：修改了js文件必须要重启才显示效果
+
+-----------冒泡事件-----------
+<view id='outter'>
+	outter view
+	<view id='middle' bindtap='middleTap'>	
+		middle view
+		<view id='inner'  bindtap='innerTap'>
+			//点击inner view 触发innerTap事件，也会把middleTap触发;从里到外
+			inner view
+		</view>
+	</view>
+</view>
+
+middleTap:function(){
+	console.log('触发了middleTap事件');
+},
+innerTap:function(){
+	console.log('触发了innerTap事件');
+},
+
+处理bindtap,还有catchtap绑定事件，catchtap阻止继续往外冒泡事件，catchtap这个还是会执行
+
+
+WXML的冒泡事件列表：
+类型		触发条件
+touchstart	手指触摸
+touchmove	手指触摸后移动
+touchcancel 手指触摸动作被打断，如来电提醒，弹窗
+touchend	手指触摸后离开
+tap			手指触摸后离开
+longtap		手指触摸后，超过350ms再离开
+
+注：除上表职位的其他组件自定义事件都是费冒泡事件，如<form/>的submit事件，<input/>的input事件，
+	<scroll-view/>的scroll事件。
+
+
+事件对象：
+innerTap:function( e ){		//在function括号里添加字符串，则表示当前事件对象
+	console.log('触发了innerTap事件');
+},
+<view id='inner'  bindtap='innerTap'>inner view</view>
+事件对象的属性列表：
+type		string			事件类型
+timeStamp	integer			事件生成时的时间戳
+target		object			触发事件的组件的一些属性值集合	//真正触发的事件源
+	dataset	 array	获取标签属性data-数据，如data-src='88'	dataset下显示一个set:88 
+currenTarget	object		当前组件的一些属性值集合
+touches		array			触摸事件、触摸点信息的数组
+detail		object			额外的信息
+
+
+引用：
+WXML提供两种文件引用方式import和include。
+
+inport可以在该文件中使用目标文件定义的template,如：
+-----------item.wxml-----------
+<view>我是item.wxml</view>
+<template name='item'>
+	<text>我是item.wxml里的{{name}}</text>
+</template>
+----------------------
+-----------test.wxml-----------
+<import src='item.wxml'/>
+<template is='item' data="{{name:'liuan'}}"/>
+//运行test.wxml会显示：我是item.wxml里的liuan
+----------------------
+
+include 可以将目标文件除了<template/>的整个代码引入，相当于是拷贝到include位置
+如：
+<include src='header.wxml'/>
+
+
+===============
+2017-04-19(WED)
+===============
+wxss 
+是一套样式语言，用于描述wxml的组件样式
+尺寸单位
+rpx（responsive pixel）:可以根据屏幕宽度进行自适应。规定屏幕宽为750rpx。如在iphone6上，屏幕宽度为375px.
+共有750个物理像素，则750rpx=375px=750物理像素，7rpx=0.5px=1物理像素。
+设备		rpx换算px(屏幕宽度/750)		px换算rpx(750/屏幕宽度)
+
+rem(root em): 规定屏幕宽度为20rem：1rem=(750/20)rpx。
+建议：开发微信小程序时设计师可以用iphone6作为视觉稿的标识。
+注意：在较小的屏幕上不可避免的会有一些毛刺，请在开发时尽量避免这种情况。
+
+样式导入
+使用@import语句可以导入外联样式表，@import后跟需要导入的外联样式表的相对路径，用;标识语句结束。
+-----------test.wxss-----------
+@import "common.wxss";
+
+-----------common.wxss-----------
+.rpx{
+	width: 400rpx;
+	height: 400rpx;
+	background-color: red;
+}
+
+
+基础组件
+框架为开发者提供了一系列基础组件，开发者可以通过组合这些基础组件进行快速开发。
+
+什么是组件？？
+组件是视图层的基本组成单元
+组件自带一些功能与微信风格的样式
+一个组件通常包括 开始标签 和 结束标签，属性 用来修饰这个组件， 内容 在两个标签之内
+注意： 所有组件与属性都是小写，以连字符 - 连接
+
+视图容器
+
+===============
+2017-04-21(FRI)
+===============
+-----------module.wxml-----------
+<scroll-view class='wrap' scroll-x='true'>
+	<view class='a'>a</view>
+	<view class='b'>b</view>
+	<view class='c'>c</view>
+</scroll-view>
+scroll-x属性：boolean 默认false,允许页面横向滚动
+scroll-y属性：boolean 默认false,允许页面纵向滚动
+----------------------
+-----------module.wxss-----------
+.wrap{
+	width: 400rpx;
+	height: 400rpx;
+	border:1px solid red;
+}
+.wrap view{
+	width: 250rpx;
+	height: 250rpx;
+}
+.a{background-color:red}
+.b{background-color:green}
+.c{background-color:blue}
+----------------------
+
+detail:Object
+	direction:"left",
+	//direction:"top"
+
+swiper:
+图片滑动：
+<swiper>
+	<swiper-item wx:for="{{imgUrl}}" indicator-dots='true' autoplay='true'>
+		<image src="{{item}}" width='335' height="150"/>//也可以换成文字
+	</swiper-item>
+</swiper>
+属性名		类型		默认值		说明
+indicator-dots	boolean		false	是否显示面板指示点
+autoplay	boolean		false		是否自动切换
+current		number		0			当前所在页面的index	//从哪一种图片开始播放
+interval	number		5000		自动切换时间间隔
+duration	number		1000		滑动动画时长
+bindchange	eventhandle				current改变时会出发change事件、event.detail={current:current}
+
+注意：其中只可放置<swiper-item/>组件，其它节点会被自动删除。
+
+
+===============
+2017-04-24(MON)
+===============
+基本内容：
+1、icon小图标：
+<icon type='' size='icon的大小' color='icon的颜色'/>
+success		正确的对勾
+
+2、text文本。支持转义符"\"
+view里面的文字，长按不可选中
+text里面的文字，长按可选中
+
+3、progress进度条
+<progress percent='20'/>
+percent		integer		进度的百分比
+show-info	boolean		是否显示百分比数字
+stroke-width	integer		进度条高度
+color		string		进度条颜色
+active		boolean		动画效果
+
+
+表单
+1、button按钮
+<button 属性></button>
+size	string		有效值default,mini
+type	string		按钮的样式类型，有效值primary,default,warn
+plain	boolean		按钮是否镂空，背景色透明
+disabled	boolean		是否禁用
+loading		boolean		名称前是否带loading图标
+form-type	string		有效值submit,reset,分别触发submit/reset事件	,	同时form可以使用bindsubmit/bindreset事件
+hover-class	string		指定按下去的样式类。hover-class="none"时，没有点击态效果
+
+2、checkbox-group复选框
+<checkbox-group bindchange>//bindchange自带change事件
+	<label   wx:for="{{country}}">
+		<checkbox value="{{item.name}}" checked="{{item.checkde}}"/>{{item.value}}
+	</label>
+</checkbox-group>
+
+3、input
+<input type='类型'/>
+<input type='number' password='true'/>
+type、number
+bindinput		除了date/time类型的输入框，当键盘输入时，触发input事件
+bindfocus		输入框聚焦时触发
+bindblur	输入框失去焦点时触发
+
+js：
+e.detail.value获取input里的值
+
+3、label
+
+4、picker滚动选择器
+//普通选择器
+<picker range="{{['北京','上海','广州']}}">
+	<view>当前选择</view>
+</picker>
+bindchange事件
+
+//事件选择器：mode=time
+value	格式hh:mm
+start	时间范围开始，hh:mm
+end		时间范围结束，hh:mm
+bindchange
+例：
+<picker mode="time" start="09:00" end="21:00">
+	<view>当前选择</view>
+</picker>
+
+//日期选择器：mode=date
+value	格式：yyyy-MM-dd
+start	日期范围的开始：yyyy-MM-dd
+end		日期范围的结束：yyyy-MM-dd
+fields		有效值year,month,day，表示选择器的粒度
+bindchange		value改变时触发change事件，event.detail={value:value}
+例：
+-----------wxml-----------
+<picker mode="date" start="2015-01-01" end="2017-12-01" bindchange="bindDateChange">
+	<view>当前选择:{{date}}</view>
+</picker>
+-----------js-----------
+data:{
+	date:'2016-01-01'
+}
+bindDateChange.function(event){
+	this.setData({
+		date:event.detail.value
+	})
+}
+
+5、radio单选框
+<radio-group>
+	<label wx:for="{{['北京','上海','广州']}}">
+		<checkbox value="{{item}}"/>{{item}}
+	</label>
+</radio-group>
+checked		boolean		是否选中	
+disabled	boolean		是否禁用
+bindchange事件
+
+6、slider滑动选择器
+<slider />
+show-value	显示值
+min			最小
+max			最大
+step		步长，每次移动的长度
+bindchange
+
+7、switch开关选择器
+checked		boolean		是否选中
+type		switch		样式，有效值：switch，checkbox
+bindchange
+<switch checked="true" type='checkbox'/>
+
+8、textarea多行文本
+属性和input一样
+auto-height	 boolean	自增高,而非滚动条
+<textarea />
+
+
+操作反馈
+wx.showActionSheet显示操作菜单
+wx.showActionSheet({
+	itemList:['A','B','C'],
+	itemColor:"red",
+	success: function(res){
+		if(!res.cancel){
+			console.log(res.tapIndex)
+		}
+	}
+})
+
+wx.showModal显示模态弹窗
+wx.showModal({
+	title:'提示',
+	content:"我是一个模态弹窗",
+	success:function(res){
+		console.log(res)
+	}
+})
+
+wx.showToast消息提示框
+wx.showToast({
+	title:"删除成功",
+	icon:"success",	//提示小图标  success/loading
+	duration: 3000,	//提示框持续显示时间
+	success:function(){
+		console.log();
+	}
+})
+
+wx.hideToast();隐藏消息提示框
+
+wx.request只能发https请求，和ajax完全类似
+wx.request({
+	url:'',
+	data:{
+		x:'',
+		y:''
+	},
+	header:{
+		'Content-Type:'application/json'
+	},
+	success: function(res){
+		console.log(res.data);
+		wx.hideToast();
+	}
+})
+
+navigator页面链接
+<navigator url="../logs/logs?id=123&a=test" redirect=""></navigator>
+redirect	当前页面打开
+
+wx.navigateTo保留当前页面，跳转到应用内的某个玉面，可以返回原页
+wx.redirectTo没有返回
+wx.navigateBack();	后退默认是1，返回上一页
+
+
+媒体组件
+audio	音频
+image	图片
+video	视屏
+
+
+地图
+map
+
+
+画布
+canvas
+bindtouchstart
+bindtouchmove
+bindtouchend
+
+
+===============
+2017-04-26(WED)
+===============
+案例：
+贪食蛇
+
+豆瓣电影
+
+
+===============
+2017-04-27(THU)
+===============
+wx.uploadFile		上传文件
+wx.chooseImage		选择图片
+需要配置公众后台小程序
+-----------wxml-----------
+<button bindtap="uploadImg">上传图片</button>
+<image src="{{imgSrc}}"></image>
+-----------js-----------
+data{
+	imgSrc:''
+},
+uploadImg:function(){
+	var that = this;
+	wx.chooseImage({
+		count: 1,//默认9  可以选择图片数
+		sizeType:['original','compressed'],//可以指定是原图还是压缩图，默认二者都有
+		sourceType:['album','camera'],//可以指定来源是相册还是相机，默认二者都有
+		success:function(res){
+			
+		/*显示图片	
+		//返回选定照片的本地文件路径列表，tempFilePath可以作为img标签的src属性显示图片
+			var tempFilePaths = res.tempFilePaths
+			that.setData({
+				imgSrc:tempFilePaths[0]
+			})
+			console.log(tempFilePaths);
+			*/
+			//上传图片
+			wx.uploadFile({
+				url:"https://tangcaiye.applinzi.com/upload_handle.php",
+				filePath:tempFilePaths[0],
+				name:"fileup",
+				success:function(res){
+					var data = res.data;
+					console.log(data);
+				},
+				fail:function()
+				{
+					console.log('图片上传失败');
+				}
+			})
+		}
+	})
+}
+-----------php-----------
+<?php	
+	//新浪云，sae存储文件的方法
+	$s = new SaeStorage();
+	ob_start();
+	readfile($_FILES['fileup']['tmp_name']);
+	$img = ob_get_contents();
+	ob_end_clean();
+	//获取文件大小
+	$size = strlen($img);
+	
+	file_put_contents(SAE_TMP_PATH."/bg.jpg",$img);
+	if($s->upload("test","test.jpg",SAE_TMP_PATH."/bg.jpg")){
+		echo "上传成功";
+	}else{
+		echo "上传失败";
+	}
+?>
+
+wx.downloadFile	下载图片
+-----------wxml-----------
+<button bindtap="downImg">下载图片</button>
+-----------js-----------
+data:{
+	imgSrc:''
+},
+downImg:function(){
+	var that = this;
+	wx.downloadFile({
+		url:'https://tangcaiye.applinzi.com/0.jpg',
+		success:function(res){
+			that.setData({
+				imgSrc:res.tempFilePath
+			});
+		}
+	})
+}
+
+
+登陆api获取openid
+wx.login
+-----------wxml-----------
+<button bindtap="login">登陆</button>
+-----------js-----------
+login:function(){
+	wx.login({
+		success:function(res){
+			//console.log(res.code);
+			wx.request({
+				url:'https://tangcaiye.applinzi.com/code.php',
+				data:{
+					code:res.code
+				},
+				header:{
+					'Content-Type:'application/json'
+				},
+				success:function(res){
+					console.log(res.data)
+				}
+			})
+		}
+	})
+}
+-----------php-----------
+<?php
+	$code = $_GET['code'];
+	$appid = "";
+	$secret = "";
+	
+	$api = "https://api.weixin.qq.com/sns/jscode2session?appid={$appid}&secret={$secret}&js_code={$code}&grant_type=authorization_code";
+	
+	//httpget请求api，然后echo返回
+?>
+
+
+客服api
+contact-button
+<contact-button type="default-light" size="20" session-from="weapp"></contact-button>
+
+
+
+
+
+
+
+
+
+
+
+
+
+

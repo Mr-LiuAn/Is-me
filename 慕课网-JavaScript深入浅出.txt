@@ -1,0 +1,449 @@
+===============
+2017-05-08(MON)
+===============
+隐式转换：
+"37" - 7 	//30
+"37" + 7 	//377
+
+巧用+/-规则转换类型
+num-0		//转换成整型
+num+''		//转换成字符串
+
+a==b
+"1.23" == 1.23
+0 == false
+null == undefined
+new Object() == new Object()
+[1,2] == [1,2]
+类型相同，同===
+类型不同，尝试类型转换和比较：
+null == undefined	相等
+number == string 转number 	1 == "1.0" //true
+boolean == ? 转number	1 == true	//true
+object	== number | string 尝试对象转为基本类型	new String('hi') == 'hi' //true
+其他false
+
+a===b
+类型不同，返回false
+类型相同：
+null === null
+undefined === undefined
+NaN ≠ NaN
+new Object() ≠ new Object()
+
+
+包装对象：
+
+
+类型检测：
+typeof		//常用	返回字符串
+instanceof	//用于判断对象
+Object.prototype.toString
+constructor
+duck type
+
+typeof 100	//"number"
+typeof true		"boolean"
+typeof function 	"function"
+typeof(undefined)		"undefined"
+typeof new Object()		"object"
+typeof [1,2]		"object
+typeof NaN		"number"
+type null 		"object"	
+为什么typeof null === "object"?
+历史原因
+
+obj instanceof Object
+[1,2] instanceof Array === true
+new Object() instanceof Array === false
+
+Object.prototype.toString
+Object.prototype.toString.apply([]); === "[object Array]";
+object.prototype.toString.apply(function(){}); === "[object Function]";
+object.prototype.toString.apply(null); === "[object Null]";
+object.prototype.toString.apply(undefined); === "[object Undefined]";
+IE6/7/8 Object.prototype.toString.apply(null) 返回"[object Object]"
+
+类型检测小结
+typeof
+适合基本类型及function检测，遇到null失效。
+
+[[Class]]
+通过{}.toString拿到，适合内置对象和基元类型，遇到null和undefined失效(IE6/7/8等返回"[object Object])。
+
+instanceof
+适合自定义对象，也可以用来检测原生对象，在不同iframe和window间检测时失效。
+
+
+表达式和运算符
+表达式：原始表达式、初始表达式、函数表达式、属性访问表达式、调用表达式、对象创建表达式
+
+数组、对象的初始化表达式
+[1,2]	new Array(1,2)
+[1,,,4]		[1,underfined,undefined,4]
+{x:1,y:2}	var o = new Object();o.x=1;o.y=2;
+
+函数表达式
+var fe = function(){}
+(function()}{console.log('hello world');})();
+
+属性访问表达式
+var o = {x:1};
+o.x
+0['x']
+
+调用表达式
+func();
+
+对象创建表达式
+new Func(1,2);
+new Object;		//没有参数时，可以直接去掉括号
+
+
+运算符：
+一元	+num
+二元	a + b
+三元	c ? a : b
+
+运算符,
+var a = (1,2,3);	//a=3	取最右边的
+
+运算符delete
+delete obj.x;
+var obj = {x:1};
+obj.x;				//1
+delete obj.x;
+obj.x;				//undefined
+
+
+===============
+2017-05-10(WED)
+===============
+运算符in
+window.x = 1 ;
+'x' in window;	//true
+
+
+语句
+1、块block
+块语句常用于组合0 ~ 多个语句。块语句用一对花括号定义。
+语法：
+{
+	语句1;
+	语句2;
+	...
+	语句n;
+}
+
+例如：
+if(true){
+	console.log('hi');
+}
+
+请注意：没有块级作用域
+for(var i=0;i<10;i++){
+	var str = 'hi';
+	
+}
+
+function foot(){
+	var a=1;
+	console.log(a);	//1
+}
+foo();
+console.log(typeof a);	//undefined
+
+2、var声明
+var a=1;  var a = b = 1;
+例：
+function foot(){
+	var a=b=1; //var a=1,b=1;函数外部就不可调用
+}
+foo();
+console.log(typeof a); //'undefined'
+console.log(typeof b); //'number'	执行foo()后，b变成公共变量，函数体外都可以使用
+
+3、try catch
+try{
+	throw "test";
+}catch(ex){
+	console.log(ex); //test
+}finally{	//是否有异常都会执行finally
+	console.log('finally');
+}
+
+4、function
+例：
+fd(); //true
+function fd(){
+	return true;
+}
+
+fe();//TypeError
+var fe=function(){
+	//do sth.
+}
+
+5、switch
+例1：
+switch(val){
+	case 1:
+		console.log(1);
+		break;
+	default:
+		console.log(0);
+		break;
+}
+例2：
+switch(val){
+	case 1:
+		console.log(1);
+	case 2:
+		console.log(2);
+	default:
+		console.log(0);
+}
+例3：
+switch(val){
+	case 1:
+	case 2:
+		console.log(12);
+		break;
+	case 3:
+		console.log(3);
+		break;
+	default:
+		console.log(0);
+}
+
+
+===============
+2017-05-11(THU)
+===============
+对象概述
+对象中包含一系列属性，这些属性是无序的。每个属性都有一个字符串key和对应的value。
+例1：
+var obj = {x:1,y:2};
+obj.x;	//1
+obj.y;	//2
+
+例2：
+var obj = {};
+obj[1] = 1;
+obj['1'] = 2;
+obj;	//Object{1:2}
+
+创建对象
+
+
+属性操作
+属性标签
+
+
+
+数组
+js中的数组是弱类型的，数组中可以含有不同类型的元素。
+格式：
+1、var arr=[];
+2、var arr = new Array();
+例1:
+var arr = [1,2,3,4,5];
+arr[1];			//2
+arr.length;		//6
+delete arr[0];
+arr[0];			//undefined
+arr.length;		//6 这里还是6，因为delete arr[0]只是把值改为undefined
+
+数据元素增删，是动态的，无需指定大小
+例1:
+var arr = [];
+arr[0] = 1;
+arr[1] = 2;
+arr.push(3);
+arr;	//[1,2,3]
+
+arr[arr.length] = 4; equal to arr.push(4);
+arr;	//[1,2,3,4]
+
+arr.unshift(0);	//第一个元素前添加元素
+arr;	//[0,1,2,3,4]
+
+delete arr[2];	//将arr[2]的值，变成undefined
+arr;	//[0,1,undefined,3,4]
+arr.length;	//5
+2 in arr; //false
+
+arr.length -= 1;	//删除尾部元素
+arr;	//[0,1,undefined,3], 4 is removed
+
+arr.pop();//3 returned by pop	删除尾部元素
+arr;	//[0,1,undefined], 3 is removed
+
+arr.shift();//0 returned by shift	删除头部元素
+arr;	//[1,undefined], 0 is removed
+
+数组迭代
+例1:
+var i=0,n=10;
+var arr = [1,2,3,4,5];
+for(;i<n;i++)
+{
+	console.log(arr[i]); //1,2,3,4,5
+}
+for(i in arr)
+{
+	console.log(arr[i]);//1,2,3,4,5
+}
+
+二维数组：
+例1:
+var arr = [[0,1],[2,3],[4,5]];
+var i=0,j=0;
+var row;
+for(;i<arr.length;i++)
+{
+	row = arr[i];
+	for(j=0;j<row.length;j++)
+	{
+		console.log(row[j]);
+	}
+}
+
+稀疏数组
+例1:
+var arr1 = [undefined];
+var arr2 = new Arry(1);
+0 in arr1;	//true
+0 in arr2;	//false
+arr1.length = 100;
+arr1[99] = 123;
+99 in arr1; //true		下标为99的值是否undefined
+98 in arr1; //false
+var arr = [,,];
+0 in arr;	//false
+
+数组方法
+join:	
+例1:	将数组转为字符串
+var arr = [1,2,3];
+arr.join();//"1,2,3"
+arr.join("_");//"1_2_3"
+
+function repeatString(str, n){
+	return new Array(n+1).join(str);
+}
+repeatString("a",3);//"aaa"
+repeatString("Hi",5);//"HiHiHiHiHi"
+
+reverse:	
+例1:	将数组逆序
+var arr = [1,2,3];
+arr.reverse();//[3,2,1]
+arr;//[3,2,1]	原数组被修改
+
+sort:	
+例1:	排序	默认按字母的顺序排序
+var arr=["a","d","c","b"];
+arr.sort();	//["a","b","c","d"]
+
+arr = [13,24,51,3];
+arr.sort();	//[13,24,3,51]	按开头数字排序了
+arr;		//[13,24,3,51]	原数组被修改
+
+arr.sort(function(a,b){
+	return a - b;
+});			//[3,13,24,51]
+
+slice
+例1:		返回部分数组 原数组不被修改
+var arr = [1,2,3,4,5];
+arr.slice(1,3);		//[2,3]
+arr.slice(1);		//[2,3,4,5]
+arr.slice(1,-1);	//[2,3,4]
+arr.slice(-4,-3);	//[2]
+
+splice:
+例1:	数组拼接
+var arr = [1,2,3,4,5];
+arr.splice(2);	//returns [3,4,5]
+arr;			//[1,2];原数组被修改
+
+arr = [1,2,3,4,5];
+arr.splice(2,2);//returns [3,4]
+arr;			//[1,2,5];
+
+arr = [1,2,3,4,5];
+arr.splice(1,1,'a','b');	//returns [2]
+arr;			//[1,"a","b",3,4,5];
+
+
+函数概述：
+函数、作用域
+函数是一块javaScript代码，被定义一次，但可执行和调用多次。js中的函数也是对象，所以js函数可以像其它对象那样操作和传递，所以我们也常叫js中的函数为函数对象。
+
+重点：
+this
+arguments
+作用域
+不同调用方式
+不同创建方法
+
+
+构造器中的this
+function MyClass(){
+	this.a = 37;
+}
+var o = new MyClass();
+console.log(o.a);	//37
+
+function C2(){
+	this.a = 37;
+	return {a:38};
+}
+o = new C2();
+console.log(o.a);	//38
+
+
+===============
+2017-05-12(FRI)
+===============
+arguments
+
+闭包的例子
+例子：
+function outer(){
+	var localVal = 30;
+	return function(){
+		return localVal;
+	}
+}
+var func = outer();
+func();//30
+
+作用域：
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
